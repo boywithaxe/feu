@@ -14,6 +14,7 @@ import argparse
 import csv
 import logging
 import re
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -168,14 +169,14 @@ def parse_transaction_row(
         return None
 
     return {
-        "row": idx,
-        "date": date,
-        "details": details,
-        "debit": debit,
+        "row":    idx,
+        "date":   date,
+        "details":details,
+        "debit":  debit,
         "credit": credit,
-        "balance": balance,
-        "x_coord": coords["x0"] if coords else "",
-        "y_coord": coords["y0"] if coords else "",
+        "balance":balance,
+        "x_coord":coords["x0"] if coords else "",
+        "y_coord":coords["y0"] if coords else "",
     }
 
 
@@ -258,9 +259,14 @@ def export_to_csv(
         logging.warning("No transactions to export for %r", csv_path)
         return
 
+    # Sort transactions chronologically
+    transactions = sorted(
+        transactions,
+        key=lambda tx: datetime.strptime(tx["date"], "%d %b %Y")
+    )
+
     # Base columns
     fieldnames = ["date", "details", "debit", "credit", "balance"]
-    # Add coords in debug mode
     if debug:
         fieldnames += ["x_coord", "y_coord"]
 
